@@ -60,8 +60,8 @@ print('\n'.join(["%s: %s" % (key, value) for key, value in vars(opt).items()]))
 
 device = torch.device('cuda')
 
-input_image_dims = [512, 512]
-proj_image_dims = [64, 64] # Height, width of 2d feature map used for lifting and rendering.
+input_image_dims = [128, 128]
+proj_image_dims = [128, 128] # Height, width of 2d feature map used for lifting and rendering.
 
 # Read origin of grid, scale of each voxel, and near plane
 _, grid_barycenter, scale, near_plane, _ = \
@@ -83,7 +83,8 @@ grid_origin[:3,3] = grid_barycenter
 # Minimum and maximum depth used for rejecting voxels outside of the cmaera frustrum
 depth_min = 0.
 depth_max = opt.grid_dim * voxel_size + opt.near_plane
-grid_dims = 3 * [opt.grid_dim]
+# grid_dims = 3 * [opt.grid_dim]
+grid_dims = 1 * [opt.grid_dim]
 
 # Resolution of canonical viewing volume in the depth dimension, in number of voxels.
 frustrum_depth = int(np.ceil(1.5 * grid_dims[-1]))
