@@ -48,9 +48,9 @@ parser.add_argument('--start_epoch', type=int, default=0,
 
 parser.add_argument('--grid_dim', type=int, default=32,
                     help='Grid sidelength. Default 32.')
-parser.add_argument('--num_grid_feats', type=int, default=64,
+parser.add_argument('--num_grid_feats', type=int, default=8,
                     help='Number of features stored in each voxel.')
-parser.add_argument('--nf0', type=int, default=64,
+parser.add_argument('--nf0', type=int, default=8,
                     help='Number of features in outermost layer of U-Net architectures.')
 parser.add_argument('--near_plane', type=float, default=np.sqrt(3)/2,
                     help='Position of the near plane.')
@@ -83,8 +83,7 @@ grid_origin[:3,3] = grid_barycenter
 # Minimum and maximum depth used for rejecting voxels outside of the cmaera frustrum
 depth_min = 0.
 depth_max = opt.grid_dim * voxel_size + opt.near_plane
-# grid_dims = 3 * [opt.grid_dim]
-grid_dims = 1 * [opt.grid_dim]
+grid_dims = 3 * [opt.grid_dim]
 
 # Resolution of canonical viewing volume in the depth dimension, in number of voxels.
 frustrum_depth = int(np.ceil(1.5 * grid_dims[-1]))
