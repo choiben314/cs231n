@@ -95,10 +95,10 @@ class DeepVoxels(nn.Module):
         # )
 
         self.rendering_net = nn.Sequential(
-        		Conv2dSame(self.nf0, out_channels=self.nf0 // 2, kernel_size=1, bias=False),
-	            nn.BatchNorm2d(self.nf0 // 2),
+        		Conv2dSame(self.nf0, out_channels=self.nf0, kernel_size=1, bias=False),
+	            nn.BatchNorm2d(self.nf0),
 	            nn.ReLU(True),
-	            Conv2dSame(self.nf0 // 2, out_channels=3, kernel_size=1),
+	            Conv2dSame(self.nf0, out_channels=3, kernel_size=1),
 	            nn.Tanh()
         	)
 
