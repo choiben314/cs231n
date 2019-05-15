@@ -103,7 +103,17 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+# Datasets:
 synthetic_scenes.zip
 train/
 validation/
 test/
+coffee/
+coffee_test/
+globe/
+globe_test/
+stanford_fountain/
+stanford_fountain_test/
+dyck/
+dyck_test/
+real_captures.zip
