@@ -96,11 +96,21 @@ class DeepVoxels(nn.Module):
 
         # NEW RENDERING NET
         self.rendering_net = nn.Sequential(
-        		Conv2dSame(self.nf0, out_channels=self.nf0, kernel_size=1, bias=False),
-	            nn.BatchNorm2d(self.nf0),
+        		Conv2dSame(self.n_grid_feats, out_channels=128, kernel_size=1, bias=False),
+	            nn.BatchNorm2d(128),
 	            nn.ReLU(True),
-	            Conv2dSame(self.nf0, out_channels=3, kernel_size=1),
-	            nn.Tanh()
+	            Conv2dSame(128, out_channels=128, kernel_size=1, bias=False),
+	            nn.BatchNorm2d(128),
+	            nn.ReLU(True),
+	            Conv2dSame(128, out_channels=128, kernel_size=1, bias=False),
+	            nn.BatchNorm2d(128),
+	            nn.ReLU(True),
+	            Conv2dSame(128, out_channels=128, kernel_size=1, bias=False),
+	            nn.BatchNorm2d(128),
+	            nn.ReLU(True),
+	            Conv2dSame(128, out_channels=3, kernel_size=1),
+	            nn.Tanh(),
+
         	)
 
         if self.use_occlusion_net:
