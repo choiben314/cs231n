@@ -11,7 +11,7 @@ def glob_imgs(path):
         imgs.extend(glob(os.path.join(path, ext)))
     return imgs
 
-def benchmark(output_dir, gt_dir, img_size=(128,128)):
+def benchmark(output_dir, gt_dir, img_size=(128,128), margin=5):
     '''Benchmark the output of a model to ground truth.
     '''
     out_paths = sorted(glob_imgs(output_dir))
@@ -26,36 +26,44 @@ def benchmark(output_dir, gt_dir, img_size=(128,128)):
     for i, (out_path, gt_path) in enumerate(zip(out_paths, gt_paths)):
         out_img = imageio.imread(out_path)
         gt_img = imageio.imread(gt_path)
-        gt_img = resize(gt_img, (118, 118), anti_aliasing=False)
+        gt_img = resize(gt_img, img_size, anti_aliasing=False)
+        gt_img = gt_img[5:123, 5:123, :]
+        gt_img = skimage.img_as_float32(gt_img)
+        out_img = skimage.img_as_float32(out_img)
 
         l1 = np.mean(np.abs(out_img - gt_img))
-        ssim = skimage.measure.compare_ssim(out_img, gt_img, multichannel=True)
-        psnr = skimage.measure.compare_psnr(out_img, gt_img)
+        range = np.abs(np.max(gt_img) - np.min(gt_img))
+        #print(np.max(gt_img))
+        #print(np.min(gt_img))
+        #print(np.max(out_img))
+        #print(np.min(out_img))
+        ssim = skimage.measure.compare_ssim(out_img, gt_img, data_range=range, multichannel=True)
+        psnr = skimage.measure.compare_psnr(out_img, gt_img, data_range=range)
 
         print(str(i) + ": " + str(ssim) + " " + str(psnr))
 
         l1_ssim_psnr[i, :] = np.array([l1, ssim, psnr])
 
     # Write into a report file
-    report_path = output_dir.strip('/').split('/')[-1] + '_VS_' + gt_dir.strip('/').split('/')[-1] + '.txt'
-    with open(report_path, 'w') as report_file:
-        report_file.write("out_name gt_name l1 ssim psnr")
+    #report_path = output_dir.strip('/').split('/')[-1] + '_VS_' + gt_dir.strip('/').split('/')[-1] + '.txt'
+    #with open(report_path, 'w') as report_file:
+      #  report_file.write("out_name gt_name l1 ssim psnr")
 
         # Write results for each image
-        for i in range(len(out_paths)):
-            item = (os.path.basename(out_paths[i]),
-                    os.path.basename(gt_paths[i]),
-                    l1_ssim_psnr[i, 0],
-                    l1_ssim_psnr[i, 1],
-                    l1_ssim_psnr[i, 2])
+       # for i in range(len(out_paths)):
+        #    item = (os.path.basename(out_paths[i]),
+         #           os.path.basename(gt_paths[i]),
+          #          l1_ssim_psnr[i, 0],
+           #         l1_ssim_psnr[i, 1],
+            #        l1_ssim_psnr[i, 2])
 
-            string = ' '.join(map(str, item)) + '\n'
-            report_file.write(string)
+            #string = ' '.join(map(str, item)) + '\n'
+            #report_file.write(string)
 
         # Last line is the mean
-        report_file.write('\n')
-        report_file.write(' '.join(map(str, np.mean(l1_ssim_psnr, axis=0).tolist())) + '\n')
-        print(' '.join(map(str, np.mean(l1_ssim_psnr, axis=0).tolist())) + '\n')
+        #report_file.write('\n')
+        #report_file.write(' '.join(map(str, np.mean(l1_ssim_psnr, axis=0).tolist())) + '\n')
+        #print(' '.join(map(str, np.mean(l1_ssim_psnr, axis=0).tolist())) + '\n')
 
     return np.mean(l1_ssim_psnr, axis=0).tolist()
 
