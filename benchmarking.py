@@ -32,6 +32,8 @@ def benchmark(output_dir, gt_dir, img_size=(128,128)):
         ssim = skimage.measure.compare_ssim(out_img, gt_img, multichannel=True)
         psnr = skimage.measure.compare_psnr(out_img, gt_img)
 
+        print(str(i) + ": " + str(ssim) + " " + str(psnr))
+
         l1_ssim_psnr[i, :] = np.array([l1, ssim, psnr])
 
     # Write into a report file
