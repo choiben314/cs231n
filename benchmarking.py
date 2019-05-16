@@ -1,7 +1,9 @@
 import os
 from glob import glob
 import skimage
-import imageio 
+import imageio
+import numpy as np
+from skimage.transform import resize
 
 def glob_imgs(path):
     imgs = []
@@ -12,8 +14,8 @@ def glob_imgs(path):
 def benchmark(output_dir, gt_dir, img_size=(128,128)):
     '''Benchmark the output of a model to ground truth.
     '''
-    out_paths = sorted(data_util.glob_imgs(output_dir))
-    gt_paths = sorted(data_util.glob_imgs(gt_dir))
+    out_paths = sorted(glob_imgs(output_dir))
+    gt_paths = sorted(glob_imgs(gt_dir))
 
     if len(out_paths) != len(gt_paths):
         print(len(out_paths), len(gt_paths))
@@ -24,6 +26,7 @@ def benchmark(output_dir, gt_dir, img_size=(128,128)):
     for i, (out_path, gt_path) in enumerate(zip(out_paths, gt_paths)):
         out_img = imageio.imread(out_path)
         gt_img = imageio.imread(gt_path)
+        gt_img = resize(gt_img, (118, 118), anti_aliasing=False)
 
         l1 = np.mean(np.abs(out_img - gt_img))
         ssim = skimage.measure.compare_ssim(out_img, gt_img, multichannel=True)
@@ -53,3 +56,8 @@ def benchmark(output_dir, gt_dir, img_size=(128,128)):
         print(' '.join(map(str, np.mean(l1_ssim_psnr, axis=0).tolist())) + '\n')
 
     return np.mean(l1_ssim_psnr, axis=0).tolist()
+
+out_dir = "./logging/test_traj/05_16/04-34-02_02-57-02_all_200.00_l1_weight_2_trgt__vase_model-epoch_4_iter_2200.pth_vase"
+gt_dir = "./test/vase/rgb"
+
+print(benchmark(out_dir, gt_dir))
