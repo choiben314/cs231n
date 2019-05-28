@@ -67,7 +67,8 @@ def benchmark(output_dir, gt_dir, img_size=(128,128), margin=5):
 
     return np.mean(l1_ssim_psnr, axis=0).tolist()
 
-out_dir = "./logging/test_traj/05_16/04-34-02_02-57-02_all_200.00_l1_weight_2_trgt__vase_model-epoch_4_iter_2200.pth_vase"
-gt_dir = "./test/vase/rgb"
+out_dir = "./logging/test_traj/05_28/20-03-38_19-18-07_all_200.00_l1_weight_2_trgt__globe_model-epoch_3_iter_1400.pth_globe_test"
+gt_dir = "./globe_test/rgb"
+
 
 print(benchmark(out_dir, gt_dir))
