@@ -154,6 +154,7 @@ def lift(x, y, z, intrinsics, homogeneous=True):
         return torch.stack((x_lift, y_lift, z), dim = -1)
 
 def world_from_xy_depth(xy, depth, cam2world, intrinsics):
+    print(cam2world.shape)
     batch_size, _, _ = cam2world.shape
 
     x_cam = xy[:, :, 0].view(batch_size, -1)
