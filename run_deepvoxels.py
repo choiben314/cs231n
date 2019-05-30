@@ -242,8 +242,8 @@ def train():
 
             cam2world = nearest_view['pose'].squeeze().to(device)
 
-            full_intrinsic, _, _, _, _ = proj_intrinsic
-            intrinsics = util.get_intrinsic_coords(full_intrinsic)
+            # full_intrinsic, _, _, _, _ = proj_intrinsic
+            intrinsics = util.get_intrinsic_coords(proj_intrinsic)
 
             ray_dirs = get_ray_directions(xy, cam2world, intrinsics)
 
