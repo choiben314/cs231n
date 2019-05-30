@@ -95,8 +95,11 @@ class DeepVoxels(nn.Module):
         # )
 
         # NEW RENDERING NET
+
+        num_render_features = self.n_grid_feats + 3
+
         self.rendering_net = nn.Sequential(
-        		Conv2dSame(self.n_grid_feats, out_channels=128, kernel_size=1, bias=False),
+        		Conv2dSame(num_render_features, out_channels=128, kernel_size=1, bias=False),
 	            nn.BatchNorm2d(128),
 	            nn.ReLU(True),
 	            Conv2dSame(128, out_channels=128, kernel_size=1, bias=False),
@@ -186,7 +189,8 @@ class DeepVoxels(nn.Module):
                 proj_frustrum_idcs_list,
                 proj_grid_coords_list,
                 lift_volume_idcs,
-                lift_img_coords,
+                lift_img_coords, 
+                ray_direction,
                 writer):
         if input_img is not None:
             # Training mode: Extract features from input img, lift them, and update the deepvoxels volume.
@@ -221,6 +225,8 @@ class DeepVoxels(nn.Module):
                 frustrum_collapse_input = can_view_vol.view(1, -1, self.frustrum_img_dims[0], self.frustrum_img_dims[1])
                 novel_image_features = self.depth_collapse_net(frustrum_collapse_input)
                 depth_maps.append(torch.zeros((1, 1, 64, 64)))
+
+            novel_img_features = torch.cat((novel_image_features, ray_direction), dim = 1)
 
             rendered_img = 0.5 * self.rendering_net(novel_image_features)
             novel_views.append(rendered_img)

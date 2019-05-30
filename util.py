@@ -16,6 +16,12 @@ def backproject(ux, uy, depth, intrinsic):
     y = (uy - intrinsic[1][2]) / intrinsic[1][1]
     return torch.stack([depth * x, depth * y, depth, torch.ones_like(depth)], dim=0)
 
+def get_intrinsic_coords(full_intrinsic):
+    fx = full_intrinsic[0][0]
+    fy = full_intrinsic[1][1]
+    cx = full_intrinsic[0][2]
+    cy = full_intrinsic[1][2]
+    return [fx, fy, cx, cy]
 
 def parse_intrinsics(filepath, trgt_sidelength, invert_y=False):
     # Get camera intrinsics
