@@ -18,6 +18,13 @@ from losses import *
 from data_util import *
 import util
 
+import unittest
+
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+from torch.nn import functional as F
+
 import time
 
 parser = argparse.ArgumentParser()
@@ -134,6 +141,40 @@ print("Number of generator parameters:")
 util.print_network(model)
 print("*" * 100)
 
+# HELPER FUNCTIONS #
+def lift(x, y, z, intrinsics, homogeneous=True):
+    # fx, fy, cx, cy = parse_intrinsics(intrinsics)
+    fx, fy, cx, cy = intrinsics
+
+    x_lift = (x - expand_as(cx, x)) / expand_as(fx, x) * z
+
+    if homogeneous:
+        return torch.stack((x_lift, y_lift, z, torch.ones_like(z).cuda()), dim=-1)
+    else:
+        return torch.stack((x_lift, y_lift, z), dim = -1)
+
+def world_from_xy_depth(xy, depth, cam2world, intrinsics):
+    batch_size, _, _ = cam2world.shape
+
+    x_cam = xy[:, :, 0].view(batch_size, -1)
+    y_cam = xy[:, :, 1].view(batch_size, -1)
+    z_cam = depth.view(batch_size, -1)
+
+    pixel_points_cam = lift(x_cam, y_cam, z_cam, intrinsics=intrinsics)
+    pixel_points_cam = pixel_points_cam.permute(0,2,1)
+
+    world_coords = torch.bmm(cam2world, pixel_points_cam).permute(0, 2, 1)[:, :, :3]
+    return world_coords
+
+def get_ray_directions(xy, cam2world, intrinsics):
+    batch_size, num_samples, _ = xy.shape
+
+    z_cam = torch.ones((batch_size, num_samples)).cuda()
+    pixel_points = world_from_xy_depth(xy, z_cam, cam2world, intrinsics)
+    cam_pos = cam2world[:, :3, 3]
+    ray_dirs = pixel_points - cam_pos[:,None,:]
+    ray_dirs = F.normalize(ray_dirs, dim=2)
+    return ray_dirs
 
 def train():
     discriminator.train()
@@ -196,9 +237,20 @@ def train():
 
             proj_frustrum_idcs, proj_grid_coords = list(zip(*proj_mappings))
 
+            xy = np.mgrid[0:proj_image_dims[0], 0:proj_image_dims[1]].astype(np.int32)
+            xy = torch.from_numpy(np.flip(xy, axis=0).copy()).long()
+
+            cam2world = nearest_view['pose'].squeeze().to(device)
+
+            full_intrinsic, _, _, _, _ = proj_intrinsic
+            intrinsics = util.get_intrinsic_coords(full_intrinsic)
+
+            ray_dirs = get_ray_directions(xy, cam2world, intrinsics)
+
             outputs, depth_maps = model(nearest_view['gt_rgb'].to(device),
                                         proj_frustrum_idcs, proj_grid_coords,
-                                        lift_volume_idcs, lift_img_coords,
+                                        lift_volume_idcs, lift_img_coords, 
+                                        ray_direction=ray_dirs,
                                         writer=writer)
 
             # Convert the depth maps to metric
