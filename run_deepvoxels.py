@@ -145,7 +145,12 @@ print("*" * 100)
 def lift(x, y, z, intrinsics, homogeneous=True):
     # fx, fy, cx, cy = parse_intrinsics(intrinsics)
     fx, fy, cx, cy = intrinsics
+    #fx = torch.from_numpy(fx)
+    #fy = torch.from_numpy(fy)
+    #cx = torch.from_numpy(cx)
+    #cy = torch.from_numpy(cy)
 
+    #x_lift = (x - cx.expand_as(x)) / fx.expand_as(x) * z
     x_lift = (x - expand_as(cx, x)) / expand_as(fx, x) * z
 
     if homogeneous:
@@ -154,7 +159,6 @@ def lift(x, y, z, intrinsics, homogeneous=True):
         return torch.stack((x_lift, y_lift, z), dim = -1)
 
 def world_from_xy_depth(xy, depth, cam2world, intrinsics):
-    print(cam2world.shape)
     batch_size, _, _ = cam2world.shape
 
     x_cam = xy[:, :, 0].view(batch_size, -1)
@@ -241,8 +245,11 @@ def train():
             xy = np.mgrid[0:proj_image_dims[0], 0:proj_image_dims[1]].astype(np.int32)
             xy = torch.from_numpy(np.flip(xy, axis=0).copy()).long()
 
-            cam2world = nearest_view['pose'].squeeze().to(device)
-
+            cam2world = np.zeros((len(trgt_views), 4, 4))
+            for i in range(len(trgt_views)):
+                cam2world[i, :, :] = (trgt_views[i]['pose'].squeeze())
+            print(cam2world.shape)
+            
             # full_intrinsic, _, _, _, _ = proj_intrinsic
             intrinsics = util.get_intrinsic_coords(proj_intrinsic)
 
