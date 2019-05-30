@@ -15,8 +15,8 @@ class DeepVoxels(nn.Module):
                  lifting_img_dims,
                  frustrum_img_dims,
                  grid_dims,
-                 num_grid_feats=16,
-                 nf0=32,
+                 num_grid_feats=8,
+                 nf0=8,
                  use_occlusion_net=True):
         ''' Initializes the DeepVoxels model.
 
