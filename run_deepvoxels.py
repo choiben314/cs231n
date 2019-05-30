@@ -406,7 +406,7 @@ def test():
             output, depth_maps, = model(None,
                                         [proj_ind_3d], [proj_ind_2d],
                                         None, None,
-                                        None)
+                                        None, None)
             end = time.time()
             forward_time += end - start
 

@@ -96,7 +96,7 @@ class DeepVoxels(nn.Module):
 
         # NEW RENDERING NET
 
-        num_render_features = self.n_grid_feats + 3
+        num_render_features = self.n_grid_feats
 
         self.rendering_net = nn.Sequential(
         		Conv2dSame(num_render_features, out_channels=128, kernel_size=1, bias=False),
@@ -225,8 +225,9 @@ class DeepVoxels(nn.Module):
                 frustrum_collapse_input = can_view_vol.view(1, -1, self.frustrum_img_dims[0], self.frustrum_img_dims[1])
                 novel_image_features = self.depth_collapse_net(frustrum_collapse_input)
                 depth_maps.append(torch.zeros((1, 1, 64, 64)))
-
-            novel_img_features = torch.cat((novel_image_features, ray_direction), dim = 1)
+            
+            if ray_direction != None:
+            	novel_img_features = torch.cat((novel_image_features, ray_direction), dim = 1)
 
             rendered_img = 0.5 * self.rendering_net(novel_image_features)
             novel_views.append(rendered_img)
