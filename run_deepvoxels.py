@@ -144,6 +144,11 @@ print("*" * 100)
 # HELPER FUNCTIONS #
 def lift(x, y, z, intrinsics, homogeneous=True):
     fx, fy, cx, cy = intrinsics
+    print(cx)
+    print(cy)
+    print(fx)
+    print(fy)
+    print(x.shape)
 
     x_lift = (x - expand_as(cx, x)) / expand_as(fx, x) * z
 
@@ -238,18 +243,22 @@ def train():
 
             xy = np.mgrid[0:proj_image_dims[0], 0:proj_image_dims[1]].astype(np.int32)
             xy = torch.from_numpy(np.flip(xy, axis=0).copy()).long()
-            xy = xy.reshape(len(trgt_views), 128 * 128, -1)
+            xy = xy.reshape(-1, 128 * 128, len(trgt_views))
 
-            cam2world = np.zeros((len(trgt_views), 4, 4))
-            for i in range(len(trgt_views)):
-                cam2world[i, :, :] = (trgt_views[i]['pose'].squeeze())
-            print(cam2world.shape) #(2, 4, 4)
+            # cam2world = np.zeros((len(trgt_views), 4, 4))
+            # for i in range(len(trgt_views)):
+            #     cam2world[i, :, :] = (trgt_views[i]['pose'].squeeze())
+            # print(cam2world.shape) #(2, 4, 4)
+            cam2world = nearest_view['pose']
+            print(cam2world.shape)
             
             intrinsics = util.get_intrinsic_coords(proj_intrinsic)
-            ray_dirs = None
+
             print(proj_intrinsic.shape) #(4, 4)
-            print(xy.shape) #([2, 16384, 1])
+            print(xy.shape) #([1, 16384, 2])
             ray_dirs = get_ray_directions(xy, cam2world, intrinsics)
+            print(ray_dirs.shape)
+            ray_dirs = ray_dirs.reshape(1, 128, 128, 3)
 
             outputs, depth_maps = model(nearest_view['gt_rgb'].to(device),
                                         proj_frustrum_idcs, proj_grid_coords,
