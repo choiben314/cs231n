@@ -151,8 +151,8 @@ def lift(x, y, z, intrinsics, homogeneous=True):
     print(x.shape)
 
     # x_lift = (x - expand_as(cx, x)) / expand_as(fx, x) * z
-    x_lift = (x - cx * torch.ones(x.shape)) / fx * torch.ones(x.shape) * z
-    y_lift = (y - cy * torch.ones(y.shape)) / fy * torch.ones(y.shape) * z
+    x_lift = (x - float(cx) * torch.ones_like(x)) / (float(fx) * torch.ones_like(x)) * z
+    y_lift = (y - float(cy) * torch.ones(y.shape).float().cuda()) / float(fy) * torch.ones(y.shape).float().cuda() * z
 
 
     if homogeneous:
