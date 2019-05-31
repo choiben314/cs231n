@@ -252,8 +252,8 @@ def train():
             
             # full_intrinsic, _, _, _, _ = proj_intrinsic
             intrinsics = util.get_intrinsic_coords(proj_intrinsic)
-
-            ray_dirs = get_ray_directions(xy, cam2world, intrinsics)
+            ray_dirs = None
+            #ray_dirs = get_ray_directions(xy, cam2world, intrinsics)
 
             outputs, depth_maps = model(nearest_view['gt_rgb'].to(device),
                                         proj_frustrum_idcs, proj_grid_coords,
