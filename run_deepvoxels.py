@@ -144,16 +144,10 @@ print("*" * 100)
 # HELPER FUNCTIONS #
 def lift(x, y, z, intrinsics, homogeneous=True):
     fx, fy, cx, cy = intrinsics
-    print(cx)
-    print(cy)
-    print(fx)
-    print(fy)
-    print(x.shape)
 
     # x_lift = (x - expand_as(cx, x)) / expand_as(fx, x) * z
-    x_lift = (x - float(cx) * torch.ones_like(x)) / (float(fx) * torch.ones_like(x)) * z
-    y_lift = (y - float(cy) * torch.ones(y.shape).float().cuda()) / float(fy) * torch.ones(y.shape).float().cuda() * z
-
+    x_lift = (x - float(cx) * torch.ones_like(x).cuda()) / (float(fx) * torch.ones_like(x).cuda()) * z
+    y_lift = (y - float(cy) * torch.ones_like(y).cuda()) / (float(fy) * torch.ones_like(y).cuda()) * z
 
     if homogeneous:
         return torch.stack((x_lift, y_lift, z, torch.ones_like(z).cuda()), dim=-1)
@@ -245,23 +239,16 @@ def train():
             proj_frustrum_idcs, proj_grid_coords = list(zip(*proj_mappings))
 
             xy = np.mgrid[0:proj_image_dims[0], 0:proj_image_dims[1]].astype(np.int32)
-            xy = torch.from_numpy(np.flip(xy, axis=0).copy()).long()
-            xy = xy.reshape(-1, 128 * 128, len(trgt_views))
+            xy = torch.from_numpy(np.flip(xy, axis=0).copy())
+            xy = xy.reshape(-1, 128 * 128, len(trgt_views)).float().cuda()
 
-            # cam2world = np.zeros((len(trgt_views), 4, 4))
-            # for i in range(len(trgt_views)):
-            #     cam2world[i, :, :] = (trgt_views[i]['pose'].squeeze())
-            # print(cam2world.shape) #(2, 4, 4)
-            cam2world = nearest_view['pose']
-            print(cam2world.shape)
+            cam2world = nearest_view['pose'].cuda()
             
             intrinsics = util.get_intrinsic_coords(proj_intrinsic)
 
-            print(proj_intrinsic.shape) #(4, 4)
-            print(xy.shape) #([1, 16384, 2])
             ray_dirs = get_ray_directions(xy, cam2world, intrinsics)
-            print(ray_dirs.shape)
             ray_dirs = ray_dirs.reshape(1, 128, 128, 3)
+            ray_dirs = ray_dirs.permute(0, 3, 1, 2)
 
             outputs, depth_maps = model(nearest_view['gt_rgb'].to(device),
                                         proj_frustrum_idcs, proj_grid_coords,
