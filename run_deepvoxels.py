@@ -251,8 +251,9 @@ def train():
             print(cam2world.shape)
             
             # full_intrinsic, _, _, _, _ = proj_intrinsic
-            intrinsics = util.get_intrinsic_coords(proj_intrinsic)
-
+            intrinsics = proj_intrinsic
+            print(proj_intrinsic.shape)
+            print(xy.shape)
             ray_dirs = get_ray_directions(xy, cam2world, intrinsics)
 
             outputs, depth_maps = model(nearest_view['gt_rgb'].to(device),
