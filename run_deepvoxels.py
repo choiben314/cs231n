@@ -399,10 +399,8 @@ def test():
 
             xy = np.mgrid[0:proj_image_dims[0], 0:proj_image_dims[1]].astype(np.int32)
             xy = torch.from_numpy(np.flip(xy, axis=0).copy())
-            xy = xy.reshape(-1, 128 * 128, len(trgt_pose)).float().cuda()
-            print(len(trgt_pose))
-
-            cam2world = trgt_pose.cuda()
+            xy = xy.reshape(-1, 128 * 128, 2).float().cuda()
+            cam2world = trgt_pose.unsqueeze(0).cuda()
             
             intrinsics = util.get_intrinsic_coords(proj_intrinsic)
 
