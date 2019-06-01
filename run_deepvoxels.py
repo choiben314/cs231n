@@ -397,11 +397,24 @@ def test():
 
             proj_ind_3d, proj_ind_2d = proj_mapping
 
+            xy = np.mgrid[0:proj_image_dims[0], 0:proj_image_dims[1]].astype(np.int32)
+            xy = torch.from_numpy(np.flip(xy, axis=0).copy())
+            xy = xy.reshape(-1, 128 * 128, len(trgt_pose)).float().cuda()
+            print(len(trgt_pose))
+
+            cam2world = trgt_pose.cuda()
+            
+            intrinsics = util.get_intrinsic_coords(proj_intrinsic)
+
+            ray_dirs = get_ray_directions(xy, cam2world, intrinsics)
+            ray_dirs = ray_dirs.reshape(1, 128, 128, 3)
+            ray_dirs = ray_dirs.permute(0, 3, 1, 2)
+
             # Run through model
             output, depth_maps, = model(None,
                                         [proj_ind_3d], [proj_ind_2d],
                                         None, None,
-                                        None, None)
+                                        ray_dirs, None)
             end = time.time()
             forward_time += end - start
 
