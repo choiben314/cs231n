@@ -190,7 +190,7 @@ def train():
     train_dataset = NovelViewTriplets(root_dir=opt.data_root,
                                       img_size=input_image_dims,
                                       sampling_pattern=opt.sampling_pattern)
-    dataloader = DataLoader(train_dataset, batch_size=1, shuffle=True, num_workers=8)
+    dataloader = DataLoader(train_dataset, batch_size=1, shuffle=False, num_workers=8)
 
     # directory name contains some info about hyperparameters.
     dir_name = os.path.join(datetime.datetime.now().strftime('%m_%d'),
@@ -240,15 +240,22 @@ def train():
 
             xy = np.mgrid[0:proj_image_dims[0], 0:proj_image_dims[1]].astype(np.int32)
             xy = torch.from_numpy(np.flip(xy, axis=0).copy())
-            xy = xy.reshape(-1, 128 * 128, len(trgt_views)).float().cuda()
-
-            cam2world = nearest_view['pose'].cuda()
+            #xy = xy.reshape(-1, 128 * 128, len(trgt_views)).float().cuda()
+            xy = xy.permute(1, 2, 0)[None,:,:,:].repeat(2, 1, 1, 1)
+            xy = xy.reshape(len(trgt_views), 128*128, 2).float().cuda()
+            #print(xy.shape)
+            
+            all_trgt_poses = [trgt_views[i]['pose'].squeeze().to(device) for i in range(len(trgt_views))]
+            #cam2world = nearest_view['pose'].cuda()
+            cam2world = torch.stack(all_trgt_poses, dim=0)
             
             intrinsics = util.get_intrinsic_coords(proj_intrinsic)
 
             ray_dirs = get_ray_directions(xy, cam2world, intrinsics)
-            ray_dirs = ray_dirs.reshape(1, 128, 128, 3)
+            #print(ray_dirs.shape)
+            ray_dirs = ray_dirs.reshape(len(trgt_views), 128, 128, 3)
             ray_dirs = ray_dirs.permute(0, 3, 1, 2)
+            #print(ray_dirs.shape)
 
             outputs, depth_maps = model(nearest_view['gt_rgb'].to(device),
                                         proj_frustrum_idcs, proj_grid_coords,
@@ -314,6 +321,10 @@ def train():
             loss_g.backward()
             optimizerG.step()
 
+            #print(trgt_views[0]['gt_rgb'].shape)
+            #print(outputs[0].shape)
+            #temp = outputs
+
             print("Iter %07d   Epoch %03d   loss_gen %0.4f   loss_discrim %0.4f" % (iter, epoch, loss_g, loss_d))
 
             if not iter % 100:
@@ -327,6 +338,10 @@ def train():
                                  torchvision.utils.make_grid(nearest_view['gt_rgb'], scale_each=True,
                                                              normalize=True).detach().numpy(),
                                  iter)
+                #print(temp[0].shape)
+                #print(temp[0][:, :, 5, -5].shape)
+                #print(len(temp))
+                #print(temp[1].shape)
                 output_vs_gt = torch.cat((torch.cat(outputs, dim=0),
                                           torch.cat([i['gt_rgb'].to(device) for i in trgt_views], dim=0)),
                                          dim=0)
@@ -335,7 +350,7 @@ def train():
                                                              scale_each=True,
                                                              normalize=True).cpu().detach().numpy(),
                                  iter)
-
+            #print(trgt_views[0]['gt_rgb'].shape)
             writer.add_scalar("out_min", outputs[0].min(), iter)
             writer.add_scalar("out_max", outputs[0].max(), iter)
 
@@ -399,7 +414,9 @@ def test():
 
             xy = np.mgrid[0:proj_image_dims[0], 0:proj_image_dims[1]].astype(np.int32)
             xy = torch.from_numpy(np.flip(xy, axis=0).copy())
-            xy = xy.reshape(-1, 128 * 128, 2).float().cuda()
+            xy = xy.reshape(1, 128 * 128, 2).float().cuda()
+            #xy = xy.permute(1, 2, 0)[None,:,:,:].repeat(2, 1, 1, 1)
+            #xy = xy.reshape(len(trgt_views), 128 * 128, 2).float().cuda()
             cam2world = trgt_pose.unsqueeze(0).cuda()
             
             intrinsics = util.get_intrinsic_coords(proj_intrinsic)
@@ -407,6 +424,7 @@ def test():
             ray_dirs = get_ray_directions(xy, cam2world, intrinsics)
             ray_dirs = ray_dirs.reshape(1, 128, 128, 3)
             ray_dirs = ray_dirs.permute(0, 3, 1, 2)
+            #print(ray_dirs)
 
             # Run through model
             output, depth_maps, = model(None,

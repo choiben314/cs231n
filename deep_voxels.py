@@ -225,8 +225,10 @@ class DeepVoxels(nn.Module):
                 frustrum_collapse_input = can_view_vol.view(1, -1, self.frustrum_img_dims[0], self.frustrum_img_dims[1])
                 novel_image_features = self.depth_collapse_net(frustrum_collapse_input)
                 depth_maps.append(torch.zeros((1, 1, 64, 64)))
+            #print(novel_image_features.shape)
             #rendered_img = 0.5 * self.rendering_net(novel_image_features)
-            rendered_img = 0.5 * self.rendering_net(torch.cat((novel_image_features, ray_direction), dim = 1))
+            #for view_ray in ray_direction:
+            rendered_img = 0.5 * self.rendering_net(torch.cat((novel_image_features, ray_direction[i].unsqueeze(0)), dim = 1))
             novel_views.append(rendered_img)
 
         return novel_views, depth_maps
