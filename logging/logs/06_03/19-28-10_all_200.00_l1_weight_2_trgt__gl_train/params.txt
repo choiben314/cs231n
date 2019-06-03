@@ -1,5 +1,5 @@
 train_test: train
-data_root: globe/
+data_root: gl_train/
 logging_root: logging/
 experiment_name: 
 max_epoch: 400
@@ -11,6 +11,6 @@ num_trgt: 2
 checkpoint: 
 start_epoch: 0
 grid_dim: 64
-num_grid_feats: 8
-nf0: 8
+num_grid_feats: 32
+nf0: 32
 near_plane: 0.8660254037844386

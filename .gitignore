@@ -119,3 +119,5 @@ dyck/
 dyck_test/
 real_captures.zip
 logging/test_traj
+gl_train/
+gl_test/

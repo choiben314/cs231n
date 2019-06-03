@@ -190,7 +190,7 @@ def train():
     train_dataset = NovelViewTriplets(root_dir=opt.data_root,
                                       img_size=input_image_dims,
                                       sampling_pattern=opt.sampling_pattern)
-    dataloader = DataLoader(train_dataset, batch_size=1, shuffle=False, num_workers=8)
+    dataloader = DataLoader(train_dataset, batch_size=1, shuffle=True, num_workers=8)
 
     # directory name contains some info about hyperparameters.
     dir_name = os.path.join(datetime.datetime.now().strftime('%m_%d'),
