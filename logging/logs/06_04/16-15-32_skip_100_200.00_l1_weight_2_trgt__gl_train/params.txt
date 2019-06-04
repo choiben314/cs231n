@@ -1,0 +1,16 @@
+train_test: train
+data_root: gl_train
+logging_root: logging/
+experiment_name: 
+max_epoch: 400
+lr: 0.0004
+l1_weight: 200
+sampling_pattern: skip_100
+no_occlusion_net: False
+num_trgt: 2
+checkpoint: 
+start_epoch: 0
+grid_dim: 32
+num_grid_feats: 16
+nf0: 32
+near_plane: 0.8660254037844386

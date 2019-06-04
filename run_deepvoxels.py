@@ -54,7 +54,7 @@ parser.add_argument('--start_epoch', type=int, default=0,
                     help='Start epoch')
 
 parser.add_argument('--grid_dim', type=int, default=64,
-                    help='Grid sidelength. Default 64.')
+                    help='Grid sidelength. Default 64')
 parser.add_argument('--num_grid_feats', type=int, default=8,
                     help='Number of features stored in each voxel.')
 parser.add_argument('--nf0', type=int, default=8,
@@ -256,6 +256,7 @@ def train():
             ray_dirs = ray_dirs.reshape(len(trgt_views), 128, 128, 3)
             ray_dirs = ray_dirs.permute(0, 3, 1, 2)
             #print(ray_dirs.shape)
+            ray_dirs=None
 
             outputs, depth_maps = model(nearest_view['gt_rgb'].to(device),
                                         proj_frustrum_idcs, proj_grid_coords,
@@ -425,6 +426,7 @@ def test():
             ray_dirs = ray_dirs.reshape(1, 128, 128, 3)
             ray_dirs = ray_dirs.permute(0, 3, 1, 2)
             #print(ray_dirs)
+            ray_dirs=None
 
             # Run through model
             output, depth_maps, = model(None,
