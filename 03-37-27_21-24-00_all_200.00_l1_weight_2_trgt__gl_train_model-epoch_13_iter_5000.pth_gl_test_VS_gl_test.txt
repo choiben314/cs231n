@@ -1,1 +1,0 @@
-out_name gt_name l1 ssim psnr

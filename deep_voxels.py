@@ -50,17 +50,6 @@ class DeepVoxels(nn.Module):
 
         # Feature extractor is an asymmetric UNet: Straight downsampling to 64x64, then a UNet with skip connections
         self.feature_extractor = nn.Sequential(
-            # DownsamplingNet([self.nf0 * (2 ** i) for i in range(num_downs - 5)],
-            #                 in_channels=3,
-            #                 use_dropout=False,
-            #                 norm=self.norm),
-            # Unet(in_channels=self.nf0 * (2 ** (num_downs - 6)),
-            #      out_channels=self.n_grid_feats,
-            #      nf0=self.nf0 * (2 ** (num_downs - 6)),
-            #      use_dropout=False,
-            #      max_channels=8*self.nf0,
-            #      num_down=5,
-            #      norm=self.norm)
             Unet(in_channels=3,
                  out_channels=self.n_grid_feats,
                  nf0=self.nf0 * (2 ** (num_downs - 6)),
@@ -69,30 +58,6 @@ class DeepVoxels(nn.Module):
                  num_down=5,
                  norm=self.norm)
         )
-
-        # Rendering net is an asymmetric UNet: UNet with skip connections and then straight upsampling
-        # self.rendering_net = nn.Sequential(
-        #     Unet(in_channels=self.n_grid_feats,
-        #          # out_channels=4 * self.nf0,
-        #          out_channels=self.nf0,
-        #          use_dropout=True,
-        #          dropout_prob=0.1,
-        #          nf0=self.nf0 * (2 ** (num_downs - 6)),
-        #          max_channels=8 * self.nf0,
-        #          num_down=5,
-        #          norm=self.norm),  # from 64 to 2 and back
-        #     # UpsamplingNet([4 * self.nf0, self.nf0] + max(0, num_downs - 7) * [self.nf0],
-        #     #               in_channels=4 * self.nf0,  # 4*self.nf0
-        #     #               use_dropout=True,
-        #     #               dropout_prob=0.1,
-        #     #               norm=self.norm,
-        #     #               upsampling_mode='transpose'),
-        #     Conv2dSame(self.nf0, out_channels=self.nf0 // 2, kernel_size=3, bias=False),
-        #     nn.BatchNorm2d(self.nf0 // 2),
-        #     nn.ReLU(True),
-        #     Conv2dSame(self.nf0 // 2, out_channels=3, kernel_size=3),
-        #     nn.Tanh()
-        # )
 
         # NEW RENDERING NET
 
@@ -225,10 +190,7 @@ class DeepVoxels(nn.Module):
                 frustrum_collapse_input = can_view_vol.view(1, -1, self.frustrum_img_dims[0], self.frustrum_img_dims[1])
                 novel_image_features = self.depth_collapse_net(frustrum_collapse_input)
                 depth_maps.append(torch.zeros((1, 1, 64, 64)))
-            #print(novel_image_features.shape)
-            #rendered_img = 0.5 * self.rendering_net(novel_image_features)
-            #for view_ray in ray_direction:
-            #print(ray_direction[i])
+
             rendered_img = 0.5 * self.rendering_net(torch.cat((novel_image_features, ray_direction[i].unsqueeze(0)), dim = 1))
             #rendered_img = 0.5 * self.rendering_net(novel_image_features)
             novel_views.append(rendered_img)
