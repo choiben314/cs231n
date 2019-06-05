@@ -15,8 +15,8 @@ class DeepVoxels(nn.Module):
                  lifting_img_dims,
                  frustrum_img_dims,
                  grid_dims,
-                 num_grid_feats=64,
-                 nf0=64,
+                 num_grid_feats=16,
+                 nf0=32,
                  use_occlusion_net=True):
         ''' Initializes the DeepVoxels model.
         :param img_sidelength: The sidelength of the input images (for instance 512)
@@ -49,11 +49,18 @@ class DeepVoxels(nn.Module):
 
         # Feature extractor is an asymmetric UNet: Straight downsampling to 64x64, then a UNet with skip connections
         self.feature_extractor = nn.Sequential(
-            DownsamplingNet([self.nf0 * (2 ** i) for i in range(num_downs - 5)],
-                            in_channels=3,
-                            use_dropout=False,
-                            norm=self.norm),
-            Unet(in_channels=self.nf0 * (2 ** (num_downs - 6)),
+            # DownsamplingNet([self.nf0 * (2 ** i) for i in range(num_downs - 5)],
+            #                 in_channels=3,
+            #                 use_dropout=False,
+            #                 norm=self.norm),
+            # Unet(in_channels=self.nf0 * (2 ** (num_downs - 6)),
+            #      out_channels=self.n_grid_feats,
+            #      nf0=self.nf0 * (2 ** (num_downs - 6)),
+            #      use_dropout=False,
+            #      max_channels=8*self.nf0,
+            #      num_down=5,
+            #      norm=self.norm)
+            Unet(in_channels=3,
                  out_channels=self.n_grid_feats,
                  nf0=self.nf0 * (2 ** (num_downs - 6)),
                  use_dropout=False,
@@ -63,27 +70,47 @@ class DeepVoxels(nn.Module):
         )
 
         # Rendering net is an asymmetric UNet: UNet with skip connections and then straight upsampling
+        # self.rendering_net = nn.Sequential(
+        #     Unet(in_channels=self.n_grid_feats,
+        #          # out_channels=4 * self.nf0,
+        #          out_channels=self.nf0,
+        #          use_dropout=True,
+        #          dropout_prob=0.1,
+        #          nf0=self.nf0 * (2 ** (num_downs - 6)),
+        #          max_channels=8 * self.nf0,
+        #          num_down=5,
+        #          norm=self.norm),  # from 64 to 2 and back
+        #     # UpsamplingNet([4 * self.nf0, self.nf0] + max(0, num_downs - 7) * [self.nf0],
+        #     #               in_channels=4 * self.nf0,  # 4*self.nf0
+        #     #               use_dropout=True,
+        #     #               dropout_prob=0.1,
+        #     #               norm=self.norm,
+        #     #               upsampling_mode='transpose'),
+        #     Conv2dSame(self.nf0, out_channels=self.nf0 // 2, kernel_size=3, bias=False),
+        #     nn.BatchNorm2d(self.nf0 // 2),
+        #     nn.ReLU(True),
+        #     Conv2dSame(self.nf0 // 2, out_channels=3, kernel_size=3),
+        #     nn.Tanh()
+        # )
+
+        # NEW RENDERING NET
         self.rendering_net = nn.Sequential(
-            Unet(in_channels=self.n_grid_feats,
-                 out_channels=4 * self.nf0,
-                 use_dropout=True,
-                 dropout_prob=0.1,
-                 nf0=self.nf0 * (2 ** (num_downs - 6)),
-                 max_channels=8 * self.nf0,
-                 num_down=5,
-                 norm=self.norm),  # from 64 to 2 and back
-            UpsamplingNet([4 * self.nf0, self.nf0] + max(0, num_downs - 7) * [self.nf0],
-                          in_channels=4 * self.nf0,  # 4*self.nf0
-                          use_dropout=True,
-                          dropout_prob=0.1,
-                          norm=self.norm,
-                          upsampling_mode='transpose'),
-            Conv2dSame(self.nf0, out_channels=self.nf0 // 2, kernel_size=3, bias=False),
-            nn.BatchNorm2d(self.nf0 // 2),
-            nn.ReLU(True),
-            Conv2dSame(self.nf0 // 2, out_channels=3, kernel_size=3),
-            nn.Tanh()
-        )
+        		Conv2dSame(self.n_grid_feats, out_channels=128, kernel_size=1, bias=False),
+	            nn.BatchNorm2d(128),
+	            nn.ReLU(True),
+	            Conv2dSame(128, out_channels=128, kernel_size=1, bias=False),
+	            nn.BatchNorm2d(128),
+	            nn.ReLU(True),
+	            Conv2dSame(128, out_channels=128, kernel_size=1, bias=False),
+	            nn.BatchNorm2d(128),
+	            nn.ReLU(True),
+	            Conv2dSame(128, out_channels=128, kernel_size=1, bias=False),
+	            nn.BatchNorm2d(128),
+	            nn.ReLU(True),
+	            Conv2dSame(128, out_channels=3, kernel_size=1),
+	            nn.Tanh(),
+
+        	)
 
         if self.use_occlusion_net:
             self.occlusion_net = OcclusionNet(nf0=self.n_grid_feats,

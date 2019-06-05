@@ -415,6 +415,7 @@ def test():
 
             xy = np.mgrid[0:proj_image_dims[0], 0:proj_image_dims[1]].astype(np.int32)
             xy = torch.from_numpy(np.flip(xy, axis=0).copy())
+            xy = xy.permute(1, 2, 0)[None,:,:,:].repeat(1, 1, 1, 1)
             xy = xy.reshape(1, 128 * 128, 2).float().cuda()
             #xy = xy.permute(1, 2, 0)[None,:,:,:].repeat(2, 1, 1, 1)
             #xy = xy.reshape(len(trgt_views), 128 * 128, 2).float().cuda()
@@ -426,7 +427,7 @@ def test():
             ray_dirs = ray_dirs.reshape(1, 128, 128, 3)
             ray_dirs = ray_dirs.permute(0, 3, 1, 2)
             #print(ray_dirs)
-            ray_dirs=None
+            #ray_dirs=None
 
             # Run through model
             output, depth_maps, = model(None,
