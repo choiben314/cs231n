@@ -69,7 +69,8 @@ def benchmark(output_dir, gt_dir, img_size=(128,128), margin=5):
 
     return np.mean(l1_ssim_psnr, axis=0).tolist()
 
-out_dir = "./throwaway/test_traj/06_05/05-28-40_21-24-00_all_200.00_l1_weight_2_trgt__gl_train_model-epoch_13_iter_5000.pth_gl_test"
+out_dir = "./eval_test/test_traj/06_05/06-27-53_19-28-10_all_200.00_l1_weight_2_trgt__gl_train_model-epoch_13_iter_5000.pth_gl_test"
+#out_dir = "./throwaway/test_traj/06_05/05-28-40_21-24-00_all_200.00_l1_weight_2_trgt__gl_train_model-epoch_13_iter_5000.pth_gl_test"
 #out_dir = "./logging/test_traj/06_05/04-00-56_19-28-10_all_200.00_l1_weight_2_trgt__gl_train_model-epoch_13_iter_5000.pth_gl_test"
 gt_dir = "./gl_test"
 #out_dir = "./logging/test_traj/05_16/04-34-02_02-57-02_all_200.00_l1_weight_2_trgt__vase_model-epoch_4_iter_2200.pth_vase"
