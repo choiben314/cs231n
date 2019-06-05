@@ -96,7 +96,7 @@ class DeepVoxels(nn.Module):
 
         # NEW RENDERING NET
 
-        num_render_features = self.n_grid_feats #+ 3
+        num_render_features = self.n_grid_feats + 3
 
         self.rendering_net = nn.Sequential(
         		Conv2dSame(num_render_features, out_channels=128, kernel_size=1, bias=False),
@@ -228,9 +228,9 @@ class DeepVoxels(nn.Module):
             #print(novel_image_features.shape)
             #rendered_img = 0.5 * self.rendering_net(novel_image_features)
             #for view_ray in ray_direction:
-            #print(ray_direction[i])
-            #rendered_img = 0.5 * self.rendering_net(torch.cat((novel_image_features, ray_direction[i].unsqueeze(0)), dim = 1))
-            rendered_img = 0.5 * self.rendering_net(novel_image_features)
+            print(ray_direction[i])
+            rendered_img = 0.5 * self.rendering_net(torch.cat((novel_image_features, ray_direction[i].unsqueeze(0)), dim = 1))
+            #rendered_img = 0.5 * self.rendering_net(novel_image_features)
             novel_views.append(rendered_img)
 
         return novel_views, depth_maps

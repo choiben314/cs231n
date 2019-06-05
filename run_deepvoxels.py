@@ -190,7 +190,7 @@ def train():
     train_dataset = NovelViewTriplets(root_dir=opt.data_root,
                                       img_size=input_image_dims,
                                       sampling_pattern=opt.sampling_pattern)
-    dataloader = DataLoader(train_dataset, batch_size=1, shuffle=True, num_workers=8)
+    dataloader = DataLoader(train_dataset, batch_size=1, shuffle=False, num_workers=8)
 
     # directory name contains some info about hyperparameters.
     dir_name = os.path.join(datetime.datetime.now().strftime('%m_%d'),
@@ -256,7 +256,7 @@ def train():
             ray_dirs = ray_dirs.reshape(len(trgt_views), 128, 128, 3)
             ray_dirs = ray_dirs.permute(0, 3, 1, 2)
             #print(ray_dirs.shape)
-            ray_dirs=None
+            #ray_dirs=None
 
             outputs, depth_maps = model(nearest_view['gt_rgb'].to(device),
                                         proj_frustrum_idcs, proj_grid_coords,
@@ -380,7 +380,7 @@ def test():
     dataset = TestDataset(pose_dir=os.path.join(opt.data_root, 'pose'))
 
     util.custom_load(model, opt.checkpoint)
-    model.eval()
+    model.train()
 
     dataloader = DataLoader(dataset, batch_size=1, shuffle=False, num_workers=4)
 
@@ -427,7 +427,7 @@ def test():
             ray_dirs = ray_dirs.reshape(1, 128, 128, 3)
             ray_dirs = ray_dirs.permute(0, 3, 1, 2)
             #print(ray_dirs)
-            ray_dirs=None
+            #ray_dirs=None
 
             # Run through model
             output, depth_maps, = model(None,
