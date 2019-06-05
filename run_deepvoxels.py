@@ -427,7 +427,7 @@ def test():
             ray_dirs = ray_dirs.reshape(1, 128, 128, 3)
             ray_dirs = ray_dirs.permute(0, 3, 1, 2)
             #print(ray_dirs)
-            #ray_dirs=None
+            ray_dirs=None
 
             # Run through model
             output, depth_maps, = model(None,

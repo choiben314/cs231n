@@ -26,8 +26,10 @@ def benchmark(output_dir, gt_dir, img_size=(128,128), margin=5):
     for i, (out_path, gt_path) in enumerate(zip(out_paths, gt_paths)):
         out_img = imageio.imread(out_path)
         gt_img = imageio.imread(gt_path)
+        #print(gt_img.shape)
+        gt_img = gt_img[:, 420:-420, :]
         gt_img = resize(gt_img, img_size, anti_aliasing=False)
-        gt_img = gt_img[5:123, 5:123, :]
+        gt_img = gt_img[5:-5, 5:-5, :]
         gt_img = skimage.img_as_float32(gt_img)
         out_img = skimage.img_as_float32(out_img)
 
@@ -47,18 +49,18 @@ def benchmark(output_dir, gt_dir, img_size=(128,128), margin=5):
     # Write into a report file
     #report_path = output_dir.strip('/').split('/')[-1] + '_VS_' + gt_dir.strip('/').split('/')[-1] + '.txt'
     #with open(report_path, 'w') as report_file:
-      #  report_file.write("out_name gt_name l1 ssim psnr")
+    #    report_file.write("out_name gt_name l1 ssim psnr")
 
         # Write results for each image
-       # for i in range(len(out_paths)):
-        #    item = (os.path.basename(out_paths[i]),
-         #           os.path.basename(gt_paths[i]),
+    #    for i in range(99):
+      #      item = (os.path.basename(out_paths[i]),
+        #            os.path.basename(gt_paths[i]),
           #          l1_ssim_psnr[i, 0],
-           #         l1_ssim_psnr[i, 1],
-            #        l1_ssim_psnr[i, 2])
+            #        l1_ssim_psnr[i, 1],
+              #      l1_ssim_psnr[i, 2])
 
-            #string = ' '.join(map(str, item)) + '\n'
-            #report_file.write(string)
+           # string = ' '.join(map(str, item)) + '\n'
+           # report_file.write(string)
 
         # Last line is the mean
         #report_file.write('\n')
@@ -67,8 +69,10 @@ def benchmark(output_dir, gt_dir, img_size=(128,128), margin=5):
 
     return np.mean(l1_ssim_psnr, axis=0).tolist()
 
-out_dir = "./logging/test_traj/05_28/20-03-38_19-18-07_all_200.00_l1_weight_2_trgt__globe_model-epoch_3_iter_1400.pth_globe_test"
-gt_dir = "./globe_test/rgb"
-
+out_dir = "./throwaway/test_traj/06_05/05-28-40_21-24-00_all_200.00_l1_weight_2_trgt__gl_train_model-epoch_13_iter_5000.pth_gl_test"
+#out_dir = "./logging/test_traj/06_05/04-00-56_19-28-10_all_200.00_l1_weight_2_trgt__gl_train_model-epoch_13_iter_5000.pth_gl_test"
+gt_dir = "./gl_test"
+#out_dir = "./logging/test_traj/05_16/04-34-02_02-57-02_all_200.00_l1_weight_2_trgt__vase_model-epoch_4_iter_2200.pth_vase"
+#gt_dir = "./test/vase/rgb"
 
 print(benchmark(out_dir, gt_dir))
